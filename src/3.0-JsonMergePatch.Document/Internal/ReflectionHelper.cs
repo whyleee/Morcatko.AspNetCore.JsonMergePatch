@@ -6,6 +6,19 @@ using System.Reflection;
 
 namespace Morcatko.AspNetCore.JsonMergePatch.Internal
 {
+	public class FixedContractResolver : DefaultContractResolver
+	{
+		public override JsonContract ResolveContract(Type type)
+		{
+			if (type == typeof(object))
+			{
+				return new JsonDictionaryContract(typeof(Dictionary<string, object>));
+			}
+
+			return base.ResolveContract(type);
+		}
+	}
+	
 #warning This should be in Newtonsoft.Json package probably
 	static class ReflectionHelper
 	{
@@ -16,6 +29,7 @@ namespace Morcatko.AspNetCore.JsonMergePatch.Internal
 
 		internal static Type GetPropertyTypeFromPath(Type type, string path, IContractResolver contractResolver)
 		{
+			contractResolver = new FixedContractResolver();
 			var currentType = type;
 			foreach (var propertyName in path.Split(pathSplitter, StringSplitOptions.RemoveEmptyEntries))
 			{
